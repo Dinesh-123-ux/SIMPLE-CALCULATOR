@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calculator</title>
+  </head>
+  <style>
+    body {
+      background-color: aqua;
+    }
+    .display{
+      width: 252px;
+      background-color: black;
+      margin: 100px auto;
+      padding: 25px;
+      text-align: center;
+      display: grid;
+      border-radius: 50px;
+      box-shadow: 50px;
+    }
+    button{
+      border: none;
+      width: 50px;
+      height: 50px;
+      margin: 5px;
+      font-size: 20px;
+      border-radius: 50%;
+      cursor: pointer;
+      background-color: lightgray;
+      color: black;
+    }
+    div{
+      display: block;
+    }
+    input {
+      font-size: 30px;
+      text-align: right;
+    }
+  </style>
+  <body>
+    <header
+      style="
+        font-size: 50px;
+        text-align: center;
+        color: rgba(255, 0, 0, 0.723);
+        padding-left: 15px;
+        margin-top: 20px;
+      "
+    >
+      CALCULATOR
+    </header>
+    <div class="display">
+      <div>
+        <input
+          type="text"
+          style="width: 234px; border: none; border-radius: 15px"
+          value="0"
+        />
+      </div>
+      <div style="padding-top: 15px">
+        <button style="background-color: brown; color: white">Del</button>
+        <button
+          style="background-color: rgba(211, 211, 211, 0.349); color: white"
+        >
+          C
+        </button>
+        <button style="background-color: orange; color: white">%</button>
+        <button style="background-color: orange; color: white">/</button>
+      </div>
+      <div>
+        <button>7</button>
+        <button>8</button>
+        <button>9</button>
+        <button style="background-color: orange; color: white">x</button>
+      </div>
+      <div>
+        <button>4</button>
+        <button>5</button>
+        <button>6</button>
+        <button style="background-color: orange; color: white">-</button>
+      </div>
+      <div>
+        <button>1</button>
+        <button>2</button>
+        <button>3</button>
+        <button style="background-color: orange; color: white">+</button>
+      </div>
+      <div>
+        <button>+/-</button>
+        <button>0</button>
+        <button>.</button>
+        <button style="background-color: green; color: white">=</button>
+      </div>
+    </div>
+
+    <script>
+      const display = document.querySelector('input[type="text"]');
+      let currentValue = "0";
+      let previousValue = "";
+      let operation = null ;
+      let shouldResetDisplay = false ;
+      let displayExpression = "0";
+
+      const buttons = document.querySelectorAll("button");
+
+      buttons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const buttonText = button.textContent.trim();
+          console.log("Button pressed:", buttonText);
+
+          if (!isNaN(buttonText) && buttonText !== ".") {
+            handleNumber(buttonText);
+          } else {
+            handleOperation(buttonText);
+          }
+        });
+      });
+
+      function handleNumber(num) {
+        if (shouldResetDisplay) {
+          currentValue = num;
+          displayExpression = currentValue;
+          shouldResetDisplay = false;
+        } else {
+          currentValue = currentValue === "0" ? num : currentValue + num;
+          if (operation) {
+            displayExpression =
+              previousValue + " " + operation + " " + currentValue;
+          } else {
+            displayExpression = currentValue;
+          }
+        }
+        updateDisplay();
+      }
+
+      function handleOperation(op) {
+        op = op.trim().toUpperCase();
+        console.log("Operation received:", op);
+        if (op === "C") {
+          console.log("Clearing calculator");
+          currentValue = "0";
+          previousValue = "";
+          operation = null;
+          shouldResetDisplay = false;
+          displayExpression = "0";
+          display.value = "0";
+        } else if (op === "DEL") {
+          currentValue = currentValue.slice(0, -1) || "0";
+          if (operation) {
+            displayExpression =
+              previousValue + " " + operation + " " + currentValue;
+          } else {
+            displayExpression = currentValue;
+          }
+          updateDisplay();
+        } else if (op === "=") {
+          if (operation && previousValue !== "") {
+            const result = calculate(
+              parseFloat(previousValue),
+              parseFloat(currentValue),
+              operation,
+            );
+            currentValue = String(result);
+            displayExpression = String(result);
+            previousValue = "";
+            operation = null;
+            shouldResetDisplay = true;
+            updateDisplay();
+          }
+        } else if (op === "+/-") {
+          currentValue = String(parseFloat(currentValue) * -1);
+          if (operation) {
+            displayExpression =
+              previousValue + " " + operation + " " + currentValue;
+          } else {
+            displayExpression = currentValue;
+          }
+          updateDisplay();
+        } else if (["+", "-", "X", "/", "%"].includes(op)) {
+          if (operation && previousValue !== "" && !shouldResetDisplay) {
+            const result = calculate(
+              parseFloat(previousValue),
+              parseFloat(currentValue),
+              operation,
+            );
+            currentValue = String(result);
+          }
+          previousValue = currentValue;
+          operation = op === "X" ? "*" : op;
+          displayExpression = previousValue + " " + operation + " ";
+          shouldResetDisplay = true;
+          updateDisplay();
+        } else if (op === ".") {
+          if (!currentValue.includes(".")) {
+            currentValue += ".";
+            if (operation) {
+              displayExpression =
+                previousValue + " " + operation + " " + currentValue;
+            } else {
+              displayExpression = currentValue;
+            }
+            updateDisplay();
+          }
+        }
+      }
+      function calculate(prev, current, op) {
+        switch (op) {
+          case "+":
+            return prev + current;
+          case "-":
+            return prev - current;
+          case "*":
+            return prev * current;
+          case "/":
+            return prev / current;
+          case "%":
+            return prev % current;
+          default:
+            return current;
+        }
+      }
+      function updateDisplay() {
+        display.value = displayExpression;
+      }
+    </script>
+  </body>
+</html>
